@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>For Aeni 🌸</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Lora:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --blush: #f7c5c5;
+    --rose: #e8828a;
+    --petal: #fde8ec;
+    --deep: #8b3a4a;
+    --cream: #fff9f5;
+    --text: #4a2530;
+    --soft: #c97a84;
+  }
+
+  body {
+    background-color: var(--cream);
+    color: var(--text);
+    font-family: 'Lora', serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Lock screen */
+  #lock-screen {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    background: var(--cream);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    transition: opacity 0.7s ease, transform 0.7s ease;
+  }
+
+  #lock-screen.unlocking {
+    opacity: 0;
+    transform: scale(1.04);
+    pointer-events: none;
+  }
+
+  #lock-screen.hidden { display: none; }
+
+  .lock-petals-bg {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+  }
+
+  .lock-icon {
+    font-size: 3rem;
+    margin-bottom: 12px;
+    animation: heartbeat 2s ease-in-out infinite;
+  }
+
+  .lock-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(1.6rem, 6vw, 2.4rem);
+    font-style: italic;
+    color: var(--deep);
+    margin-bottom: 6px;
+    text-align: center;
+  }
+
+  .lock-sub {
+    font-size: 0.9rem;
+    color: var(--soft);
+    font-style: italic;
+    margin-bottom: 36px;
+    text-align: center;
+  }
+
+  .lock-input-wrap {
+    position: relative;
+    margin-bottom: 16px;
+  }
+
+  .lock-input {
+    background: white;
+    border: 2px solid var(--blush);
+    border-radius: 50px;
+    padding: 14px 52px 14px 24px;
+    font-size: 1rem;
+    font-family: 'Lora', serif;
+    color: var(--text);
+    outline: none;
+    width: 240px;
+    text-align: center;
+    letter-spacing: 0.1em;
+    transition: border-color 0.25s, box-shadow 0.25s;
+    box-shadow: 0 2px 12px rgba(232,130,138,0.08);
+  }
+
+  .lock-input:focus {
+    border-color: var(--rose);
+    box-shadow: 0 4px 20px rgba(232,130,138,0.18);
+  }
+
+  .lock-input.shake {
+    animation: shake 0.4s ease;
+    border-color: #e05a5a;
+  }
+
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    20%       { transform: translateX(-8px); }
+    40%       { transform: translateX(8px); }
+    60%       { transform: translateX(-6px); }
+    80%       { transform: translateX(6px); }
+  }
+
+  .lock-btn {
+    background: linear-gradient(135deg, var(--rose), var(--deep));
+    color: white;
+    border: none;
+    border-radius: 50px;
+    padding: 13px 40px;
+    font-size: 0.95rem;
+    font-family: 'Lora', serif;
+    font-style: italic;
+    cursor: pointer;
+    box-shadow: 0 4px 16px rgba(232,130,138,0.3);
+    transition: transform 0.2s, box-shadow 0.2s;
+    letter-spacing: 0.04em;
+  }
+
+  .lock-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(232,130,138,0.35);
+  }
+
+  .lock-btn:active { transform: translateY(0); }
+
+  .lock-hint {
+    margin-top: 18px;
+    font-size: 0.78rem;
+    color: #d4a0a7;
+    font-style: italic;
+    height: 18px;
+    transition: opacity 0.3s;
+  }
+
+  .lock-hint.visible { color: #e05a5a; }
+
+  .petals {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    overflow: hidden;
+  }
+
+  .petal {
+    position: absolute;
+    top: -60px;
+    font-size: 1.4rem;
+    opacity: 0;
+    animation: fall linear infinite;
+  }
+
+  @keyframes fall {
+    0%   { opacity: 0; transform: translateY(0) rotate(0deg); }
+    10%  { opacity: 0.7; }
+    90%  { opacity: 0.5; }
+    100% { opacity: 0; transform: translateY(110vh) rotate(360deg); }
+  }
+
+  /* Page navigation */
+  .nav {
+    position: fixed;
+    bottom: 28px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 10px;
+    z-index: 100;
+    background: rgba(255,255,255,0.85);
+    backdrop-filter: blur(10px);
+    padding: 10px 18px;
+    border-radius: 50px;
+    box-shadow: 0 4px 20px rgba(232,130,138,0.2);
+    border: 1px solid rgba(247,197,197,0.4);
+  }
+
+  .nav-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: var(--blush);
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+
+  .nav-dot.active {
+    background: var(--rose);
+    transform: scale(1.3);
+  }
+
+  .nav-btn {
+    background: none;
+    border: none;
+    color: var(--soft);
+    font-size: 1rem;
+    cursor: pointer;
+    padding: 0 4px;
+    transition: color 0.2s;
+  }
+  .nav-btn:hover { color: var(--rose); }
+
+  /* Slides container */
+  .slides-wrap {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    overflow: hidden;
+  }
+
+  .slides {
+    display: flex;
+    transition: transform 0.6s cubic-bezier(.16,1,.3,1);
+    will-change: transform;
+  }
+
+  .slide {
+    min-width: 100%;
+    padding: 60px 24px 120px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  /* Top decoration */
+  .top-deco {
+    font-size: 2rem;
+    letter-spacing: 0.5rem;
+    margin-bottom: 12px;
+    color: var(--rose);
+  }
+
+  /* Card */
+  .card {
+    background: white;
+    border-radius: 28px;
+    padding: 52px 48px;
+    width: 100%;
+    max-width: 680px;
+    box-shadow:
+      0 2px 8px rgba(232,130,138,0.08),
+      0 12px 40px rgba(232,130,138,0.14),
+      0 0 0 1.5px rgba(232,130,138,0.12);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .card::before {
+    content: '';
+    position: absolute;
+    top: -60px; right: -60px;
+    width: 200px; height: 200px;
+    background: radial-gradient(circle, #fde8ec 0%, transparent 70%);
+    border-radius: 50%;
+  }
+  .card::after {
+    content: '';
+    position: absolute;
+    bottom: -40px; left: -40px;
+    width: 160px; height: 160px;
+    background: radial-gradient(circle, #fde8ec 0%, transparent 70%);
+    border-radius: 50%;
+  }
+
+  .to-label {
+    font-family: 'Lora', serif;
+    font-style: italic;
+    font-size: 0.95rem;
+    color: var(--soft);
+    letter-spacing: 0.06em;
+    margin-bottom: 6px;
+  }
+
+  h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2.2rem, 7vw, 3.2rem);
+    font-weight: 600;
+    color: var(--deep);
+    line-height: 1.15;
+    margin-bottom: 28px;
+  }
+
+  h1 span { color: var(--rose); font-style: italic; }
+
+  .page-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(1.5rem, 5vw, 2.2rem);
+    font-weight: 600;
+    color: var(--deep);
+    line-height: 1.2;
+    margin-bottom: 28px;
+  }
+
+  .page-title span { color: var(--rose); font-style: italic; }
+
+  .divider {
+    width: 60px;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--blush), transparent);
+    margin-bottom: 28px;
+  }
+
+  .letter-body {
+    font-size: 1.05rem;
+    line-height: 1.85;
+    color: var(--text);
+    position: relative;
+    z-index: 1;
+  }
+
+  .letter-body p { margin-bottom: 18px; }
+  .letter-body p:last-child { margin-bottom: 0; }
+
+  .highlight {
+    background: linear-gradient(120deg, #fde8ec 0%, #fde8ec 100%);
+    background-repeat: no-repeat;
+    background-size: 100% 40%;
+    background-position: 0 85%;
+    padding: 0 2px;
+  }
+
+  .signature {
+    margin-top: 36px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 4px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .sig-from {
+    font-style: italic;
+    font-size: 0.9rem;
+    color: var(--soft);
+  }
+
+  .sig-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.5rem;
+    font-style: italic;
+    color: var(--deep);
+  }
+
+  .stamp {
+    position: absolute;
+    top: 24px; right: 28px;
+    font-size: 2.2rem;
+    animation: heartbeat 2s ease-in-out infinite;
+    z-index: 2;
+  }
+
+  @keyframes heartbeat {
+    0%, 100% { transform: scale(1); }
+    15%       { transform: scale(1.2); }
+    30%       { transform: scale(1); }
+    45%       { transform: scale(1.1); }
+  }
+
+  /* Reason pills */
+  .reasons {
+    width: 100%;
+    max-width: 680px;
+    margin-top: 32px;
+  }
+
+  .reasons-title {
+    font-family: 'Playfair Display', serif;
+    font-style: italic;
+    font-size: 1.15rem;
+    color: var(--soft);
+    text-align: center;
+    margin-bottom: 18px;
+  }
+
+  .pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+  }
+
+  .pill {
+    background: white;
+    border: 1.5px solid var(--blush);
+    color: var(--deep);
+    border-radius: 50px;
+    padding: 8px 20px;
+    font-size: 0.88rem;
+    font-family: 'Lora', serif;
+    font-style: italic;
+    transition: all 0.25s ease;
+    cursor: default;
+    box-shadow: 0 2px 8px rgba(232,130,138,0.06);
+  }
+
+  .pill:hover {
+    background: var(--petal);
+    border-color: var(--rose);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(232,130,138,0.18);
+  }
+
+  .bottom-hearts {
+    margin-top: 40px;
+    font-size: 1.4rem;
+    letter-spacing: 0.6rem;
+    color: var(--rose);
+  }
+
+  /* Page 3 special style */
+  .card-honest {
+    background: white;
+    border-radius: 28px;
+    padding: 52px 48px;
+    width: 100%;
+    max-width: 680px;
+    box-shadow:
+      0 2px 8px rgba(232,130,138,0.08),
+      0 12px 40px rgba(232,130,138,0.14),
+      0 0 0 1.5px rgba(232,130,138,0.12);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .card-honest::before {
+    content: '';
+    position: absolute;
+    top: -60px; right: -60px;
+    width: 200px; height: 200px;
+    background: radial-gradient(circle, #fde8ec 0%, transparent 70%);
+    border-radius: 50%;
+  }
+
+  .page-label {
+    font-size: 0.78rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--soft);
+    margin-bottom: 40px;
+    text-align: center;
+    font-family: 'Lora', serif;
+  }
+
+  @keyframes fadeDown {
+    from { opacity: 0; transform: translateY(-16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes riseUp {
+    from { opacity: 0; transform: translateY(28px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+
+  .slide.active .card,
+  .slide.active .card-honest,
+  .slide.active .reasons,
+  .slide.active .top-deco,
+  .slide.active .bottom-hearts {
+    animation: riseUp 0.7s cubic-bezier(.16,1,.3,1) both;
+  }
+
+  @media (max-width: 520px) {
+    .card, .card-honest { padding: 40px 24px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Lock Screen -->
+<div id="lock-screen">
+  <div class="lock-petals-bg" id="lock-petals"></div>
+  <div class="lock-icon">🔒</div>
+  <div class="lock-title">For Aeni 🌸</div>
+  <div class="lock-sub">this page is just for you</div>
+  <div class="lock-input-wrap">
+    <input class="lock-input" id="lock-input" type="password" placeholder="enter the password…" autocomplete="off" />
+  </div>
+  <button class="lock-btn" id="lock-btn">Open ♡</button>
+  <div class="lock-hint" id="lock-hint">hint: it's your name 🌷</div>
+</div>
+
+<div class="petals" id="petals"></div>
+
+<div class="slides-wrap">
+  <div class="slides" id="slides">
+
+    <!-- PAGE 1 -->
+    <div class="slide active" id="slide-0">
+      <div class="top-deco">🌸 · 🌸 · 🌸</div>
+      <div class="card">
+        <div class="stamp">💌</div>
+        <p class="to-label">a letter for</p>
+        <h1>My dearest <span>Aeni</span></h1>
+        <div class="divider"></div>
+        <div class="letter-body">
+          <p>There are so many cute things about you that stay in my mind all day.</p>
+          <p>Your anger is probably my favorite one. Not because you're angry, but because even when you're upset, you still look adorable. The way you argue, the way you say things when you're annoyed, and the way you try to act serious always ends up <span class="highlight">making me smile.</span></p>
+          <p>I love the way you talk too. Even your random messages make my day better. Sometimes I read our chats again just because I miss talking to you.</p>
+          <p>But there is one thing that always makes me sad. You're my girlfriend, yet I barely get to see your beautiful face. I wish you'd send me more pictures so I can admire the person I care about. And I wish you'd send me voice notes sometimes too. I want to hear your cute voice, your laugh, your little reactions, and the way you say my name.</p>
+          <p>I love how mysterious you are, how you make me curious about you every day, and how you can make my mood better without even trying. Even when you're stubborn, dramatic, or pretending not to care, I still find you <span class="highlight">incredibly cute.</span></p>
+          <p>Maybe you don't realize it, but the smallest things about you stay in my head for hours. Your messages, your attitude, your jokes, your anger, your kindness — everything.</p>
+          <p>So yes, I complain about not getting pictures or voice notes, but it's only because I like you so much and I want to know more about the girl who somehow <span class="highlight">became my favorite person.</span></p>
+        </div>
+        <div class="signature">
+          <span class="sig-from">with all my love,</span>
+          <span class="sig-name">Yours ♡</span>
+        </div>
+      </div>
+
+      <div class="reasons">
+        <p class="reasons-title">a few tiny reasons I adore you ✨</p>
+        <div class="pills">
+          <div class="pill">your anger 🥺</div>
+          <div class="pill">your random messages</div>
+          <div class="pill">your mysterious side</div>
+          <div class="pill">the way you talk</div>
+          <div class="pill">your stubbornness</div>
+          <div class="pill">your cute voice</div>
+          <div class="pill">your little reactions</div>
+          <div class="pill">just… you 🌷</div>
+        </div>
+      </div>
+      <div class="bottom-hearts">♡ ♡ ♡</div>
+    </div>
+
+    <!-- PAGE 2 -->
+    <div class="slide" id="slide-1">
+      <div class="top-deco">🌷 · 💌 · 🌷</div>
+      <div class="card">
+        <div class="stamp">🤍</div>
+        <p class="page-label">page two</p>
+        <div class="page-title">Still <span>learning</span> how to love you</div>
+        <div class="divider"></div>
+        <div class="letter-body">
+          <p>Maybe the problem isn't that I don't care enough. Maybe it's that I don't always know how to show it.</p>
+          <p>The truth is, I don't have much experience when it comes to loving someone. I don't always know what makes you smile, what words you need to hear, or what little things make your day better. Sometimes I stay quiet when I should say more, and sometimes I fail to understand what you're trying to tell me.</p>
+          <p>It's not because you're unimportant to me. It's because <span class="highlight">I'm still learning.</span></p>
+          <p>There are moments when I feel like I'm not good enough for you. Not because you make me feel that way, but because I see all the things I wish I could do better. I wish I understood you more, made you happier, and gave you fewer reasons to be upset.</p>
+          <p>But despite all that, one thing is real: <span class="highlight">every day I try.</span> I pay attention, I learn from my mistakes, and I care more than I know how to explain.</p>
+          <p>So if I seem lost sometimes, please don't mistake it for a lack of feelings. I'm just someone who's learning how to love you properly, one little thing at a time.</p>
+        </div>
+        <div class="signature">
+          <span class="sig-from">honestly yours,</span>
+          <span class="sig-name">Still trying ♡</span>
+        </div>
+      </div>
+      <div class="bottom-hearts">♡ ♡ ♡</div>
+    </div>
+
+    <!-- PAGE 3 -->
+    <div class="slide" id="slide-2">
+      <div class="top-deco">🍃 · 🌸 · 🍃</div>
+      <div class="card-honest">
+        <div class="stamp">🕊️</div>
+        <p class="page-label">page three</p>
+        <div class="page-title">You are <span>free</span></div>
+        <div class="divider"></div>
+        <div class="letter-body">
+          <p>You belong to no one, but there's a relationship only between us — and it means nothing to other men.</p>
+          <p>Anyone can fall in love with you, and they are free to ask you out. <span class="highlight">You should decide who you like more.</span></p>
+          <p>If I'm not good enough, you can choose someone else.</p>
+          <p>I just hope that whoever you choose — even if it's not me — treats you the way you deserve to be treated. With patience, with care, and with the kind of love that makes you feel safe.</p>
+          <p>But for now, while you're still mine, I'll keep trying. I'll keep learning. And I'll keep being grateful for every little moment you give me.</p>
+        </div>
+        <div class="signature">
+          <span class="sig-from">always,</span>
+          <span class="sig-name">Yours (for now & always) ♡</span>
+        </div>
+      </div>
+      <div class="bottom-hearts">♡ ♡ ♡</div>
+    </div>
+
+  </div><!-- /slides -->
+</div>
+
+<!-- Navigation -->
+<nav class="nav">
+  <button class="nav-btn" id="prev">&#8592;</button>
+  <button class="nav-dot active" data-page="0"></button>
+  <button class="nav-dot" data-page="1"></button>
+  <button class="nav-dot" data-page="2"></button>
+  <button class="nav-btn" id="next">&#8594;</button>
+</nav>
+
+<script>
+  // Petals
+  const emojis = ['🌸', '🌷', '🍃', '✿', '💮'];
+  const container = document.getElementById('petals');
+  for (let i = 0; i < 22; i++) {
+    const el = document.createElement('div');
+    el.className = 'petal';
+    el.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+    el.style.left = Math.random() * 100 + 'vw';
+    el.style.fontSize = (0.9 + Math.random() * 1.2) + 'rem';
+    el.style.animationDuration = (7 + Math.random() * 10) + 's';
+    el.style.animationDelay = (Math.random() * 12) + 's';
+    container.appendChild(el);
+  }
+
+  // Lock screen petals
+  const lockPetals = document.getElementById('lock-petals');
+  for (let i = 0; i < 14; i++) {
+    const el = document.createElement('div');
+    el.className = 'petal';
+    el.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+    el.style.left = Math.random() * 100 + 'vw';
+    el.style.fontSize = (0.8 + Math.random() * 1) + 'rem';
+    el.style.animationDuration = (8 + Math.random() * 10) + 's';
+    el.style.animationDelay = (Math.random() * 10) + 's';
+    lockPetals.appendChild(el);
+  }
+
+  // Password logic
+  const lockScreen = document.getElementById('lock-screen');
+  const lockInput = document.getElementById('lock-input');
+  const lockBtn = document.getElementById('lock-btn');
+  const lockHint = document.getElementById('lock-hint');
+  const PASSWORD = 'aeni';
+
+  function tryUnlock() {
+    if (lockInput.value.trim().toLowerCase() === PASSWORD) {
+      lockScreen.classList.add('unlocking');
+      lockHint.textContent = '🌸 Welcome, Aeni!';
+      lockHint.classList.add('visible');
+      setTimeout(() => lockScreen.classList.add('hidden'), 750);
+    } else {
+      lockInput.classList.remove('shake');
+      void lockInput.offsetWidth; // reflow to re-trigger
+      lockInput.classList.add('shake');
+      lockHint.textContent = 'wrong password 🥺 try again';
+      lockHint.classList.add('visible');
+      lockInput.value = '';
+      setTimeout(() => {
+        lockInput.classList.remove('shake');
+        lockHint.textContent = 'hint: it\'s your name 🌷';
+        lockHint.classList.remove('visible');
+      }, 2000);
+    }
+  }
+
+  lockBtn.addEventListener('click', tryUnlock);
+  lockInput.addEventListener('keydown', e => { if (e.key === 'Enter') tryUnlock(); });
+
+  const slides = document.getElementById('slides');
+  const dots = document.querySelectorAll('.nav-dot');
+  const allSlides = document.querySelectorAll('.slide');
+  let current = 0;
+  const total = 3;
+
+  function goTo(n) {
+    current = (n + total) % total;
+    slides.style.transform = `translateX(-${current * 100}%)`;
+    dots.forEach((d, i) => d.classList.toggle('active', i === current));
+    allSlides.forEach((s, i) => {
+      s.classList.toggle('active', i === current);
+    });
+  }
+
+  document.getElementById('prev').onclick = () => goTo(current - 1);
+  document.getElementById('next').onclick = () => goTo(current + 1);
+  dots.forEach(d => d.addEventListener('click', () => goTo(+d.dataset.page)));
+
+  // Swipe support
+  let startX = 0;
+  slides.addEventListener('touchstart', e => { startX = e.touches[0].clientX; }, { passive: true });
+  slides.addEventListener('touchend', e => {
+    const dx = e.changedTouches[0].clientX - startX;
+    if (Math.abs(dx) > 50) goTo(dx < 0 ? current + 1 : current - 1);
+  });
+</script>
+</body>
+</html>
+
